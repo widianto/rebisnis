@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# PLEASE I'm stil new and not serious about bash script.
+# I'm sure this script can be be improbved
+# It just works and help me doing everyday chores
+
 tanggal=$1
 jenisKoran=$2
 
