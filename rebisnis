@@ -1,0 +1,43 @@
+#!/bin/bash
+
+tanggal=$1
+jenisKoran=$2
+
+# Weekend
+find . -type f -name 'Edisi_Weekend*' | while read FILE ; do
+	# sed 's/^(<span.*">\([0-9]*\).*">\([0-9]*\).*/(\1.\2)/'
+  newfile="$(echo ${FILE} |sed 's/Edisi_Weekend\_\([[:digit:]][[:digit:]][[:digit:]][[:digit:]]\-[[:digit:]][[:digit:]]\-[[:digit:]][[:digit:]]\)_\([[:digit:]]\)\.\(00\)*/Edisi_Weekend_\1_0\2\.\3/')" ;
+  mv "${FILE}" "${newfile}" ;
+  # echo "${FILE} -> ${newfile}"
+done
+
+# Harian
+find . -type f -name 'Edisi_Harian*' | while read FILE ; do
+  newfile="$(echo ${FILE} |sed 's/Edisi_Harian_\([[:digit:]][[:digit:]][[:digit:]][[:digit:]]\-[[:digit:]][[:digit:]]\-[[:digit:]][[:digit:]]\)_\([[:digit:]]\)\.\(00\)*/Edisi_Harian_\1_0\2\.\3/')" ;
+  mv "${FILE}" "${newfile}" ;
+	# echo "${FILE} -> ${newfile}"
+done
+
+if [ -n $1 ] 
+then
+	echo "--------------------"
+	echo "Merging PDF files..."
+	fSearch="Edisi_${jenisKoran}_${tanggal}_*"
+	fTarget="Target_${tanggal}_o.pdf"
+	if [ $jenisKoran = "Harian" ] ; then
+		fFinal="Harian_${tanggal}.pdf"
+	else
+		fFinal="Harian_${tanggal}_Weekend.pdf"
+	fi
+	PDFmerge="/System/Library/Automator/Combine\ PDF\ Pages.action/Contents/Resources/join.py -o ${fTarget} ${fSearch}"
+	eval $PDFmerge
+	echo "Optimizing final PDF file..."
+	PDFopt="gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH
+	 -sOutputFile=${fFinal} ${fTarget} > /dev/null 2>&1"
+	eval $PDFopt
+	eval 'rm ${fTarget}'
+	echo "Moving unused files to trash..."
+	eval "mv ./${fSearch} ${HOME}/.Trash/"
+	echo "--------------------"	
+	echo "SUDAH 👍"
+fi
